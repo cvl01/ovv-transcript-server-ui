@@ -1,7 +1,7 @@
 <template>
     <div class="transcript-diff">
         <h3 class="text-lg font-medium">Transcript Diff</h3>
-        <div v-html="diffHtml" class="space-y-4"></div>
+        <div v-html="diffHtml" contenteditable="true" class="space-y-4"></div>
     </div>
 </template>
 
