@@ -14,9 +14,27 @@
                 </li>
             </ul>
 
-            <button @click="combineInsightsProject" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-                combineInsights Project
-            </button>
+            <!-- Combine Insights Form -->
+            <div class="space-y-4 bg-white shadow-md rounded-lg p-4 mt-12 border-green-200 border border-solid">
+                <h3 class="text-lg font-medium">Combine Project Insights</h3>
+                <form @submit.prevent="combineInsights">
+                    <div class="mb-4">
+                        <label for="llm_model_name" class="block text-gray-700 font-medium">LLM Model Name</label>
+                        <select id="llm_model_name" v-model="formData.llmModelName" class="w-full p-2 border border-gray-300 rounded-md">
+                            <option value="">Selecteer een optie</option>
+                            <option v-for="model in llmModels" :key="model" :value="model">{{ model }}</option>
+                        </select>
+                    </div>
+                    <div class="mb-4">
+                        <label for="reprocess" class="block text-gray-700 font-medium">Reprocess</label>
+                        <input id="reprocess" v-model="formData.reprocess" type="checkbox" class="mr-2 leading-tight" />
+                        <span class="text-gray-700">Reprocess Insights</span>
+                    </div>
+                    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                        Combine Insights
+                    </button>
+                </form>
+            </div>
         </div>
 
         <!-- Questions & Answers (Right Column) -->
@@ -28,7 +46,7 @@
             </button>
 
             <div v-for="qa in project.questions_answers" :key="qa.id" class="bg-white shadow-md border rounded-lg p-8 h-auto" :id="'question-box-' + qa.id">
-                <h3 class="">{{ qa.heading }}</h3>
+                <h3>{{ qa.heading }}</h3>
                 <span class="italic"> #{{ qa.question_id }} {{ qa.question }}</span>
                 <hr class="mb-4 ">
 
@@ -57,6 +75,7 @@ import { useRoute } from 'vue-router';
 import { Marked } from '@ts-stack/markdown';
 import { OllamaMarkdownRenderer } from '../helpers/OllamaMarkdownRenderer';
 import { Project, QuestionAnswer } from '../types';
+import { fetchLLMModels } from '../helpers/llmHelpers';
 
 Marked.setOptions({ renderer: new OllamaMarkdownRenderer() });
 
@@ -67,17 +86,35 @@ export default defineComponent({
         const showMore = ref<{ [key: number]: boolean }>({}); // Track expanded answers
         const maxLength = 200; // Max length for truncation
 
-        const combineInsightsProject = async () => {
+        // Group form data into one structure
+        const formData = ref({
+            llmModelName: '', // Default value for LLM Model
+            reprocess: false, // Default value for reprocess
+        });
+
+        const llmModels = ref<string[]>([]); // Store LLM models
+
+        const fetchLLMData = async () => {
+            const models = await fetchLLMModels();
+            llmModels.value = models;
+        };
+
+        const combineInsights = async () => {
             try {
-                const response = await axios.get(`/projects/${route.params.id}/combine-insights`);
+                const response = await axios.get(`/projects/${route.params.id}/combine-insights`, {
+                    params: {
+                        llm_model_name: formData.value.llmModelName,
+                        reprocess: formData.value.reprocess,
+                    },
+                });
                 alert(response.data.message);
             } catch (error) {
-                console.error('Error combineInsightsing the project:', error);
-                alert('Failed to trigger combineInsightsing');
+                console.error('Error combining insights:', error);
+                alert('Failed to combine insights');
             }
         };
-        const parseIfPresent = (text: string | null | undefined) => text ? Marked.parse(text) : null;
 
+        const parseIfPresent = (text: string | null | undefined) => text ? Marked.parse(text) : null;
 
         const fetchProjectDetail = async () => {
             const response = await axios.get(`/projects/${route.params.id}`);
@@ -117,27 +154,12 @@ export default defineComponent({
             return text;
         };
 
-        onMounted(fetchProjectDetail);
+        onMounted(() => {
+            fetchProjectDetail();
+            fetchLLMData();
+        });
 
-        return { project, toggleShowMore, toggleShowAll, showMore, truncateText, maxLength, combineInsightsProject, parseIfPresent };
+        return { project, toggleShowMore, toggleShowAll, showMore, truncateText, maxLength, combineInsights, parseIfPresent, formData, llmModels };
     },
 });
 </script>
-
-<style scoped>
-.truncate-text {
-    position: relative;
-    overflow: hidden;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-}
-
-.overlay {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    height: 6em;
-    width: 100%;
-    background: linear-gradient(to top, white, rgba(255, 255, 255, 0.3));
-}
-</style>

@@ -56,6 +56,7 @@
         <label class="block mb-2">
           LLM Model:
           <select v-model="uploadForm.llmModelName" class="border p-2 w-full">
+            <option value="">Selecteer een optie</option>
             <option v-for="model in data.llmModels" :key="model" :value="model">
               {{ model }}
             </option>
@@ -112,6 +113,7 @@
 <script lang="ts">
 import { defineComponent, ref, onMounted } from 'vue';
 import axios from 'axios';
+import { fetchLLMModels } from '../helpers/llmHelpers';
 
 // Define interfaces
 interface AudioFileSummary {
@@ -190,9 +192,9 @@ export default defineComponent({
     };
 
     // Fetch available LLM models from the API
-    const fetchLLMModels = async () => {
-      const response = await axios.get('/llm-models/');
-      data.value.llmModels = response.data;
+    const setLLMModels = async () => {
+      const models = await fetchLLMModels();
+      data.value.llmModels = models;
       if (data.value.llmModels.length > 0) {
         uploadForm.value.llmModelName = data.value.llmModels[0];
       }
@@ -254,7 +256,7 @@ export default defineComponent({
       fetchAudioFiles();
       fetchProjects();
       fetchWhisperModels();
-      fetchLLMModels();
+      setLLMModels();
     });
 
     return {
