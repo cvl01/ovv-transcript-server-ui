@@ -1,0 +1,1 @@
+{"root":["./src/axios.ts","./src/main.ts","./src/types.ts","./src/vite-env.d.ts","./src/helpers/OllamaMarkdownRenderer.ts","./src/helpers/llmHelpers.ts","./src/helpers/markdownRender.ts","./src/router/index.ts","./src/App.vue","./src/components/TranscriptDiff.vue","./src/views/DetailView.vue","./src/views/HomeView.vue","./src/views/ProjectView.vue"],"version":"5.6.2"}

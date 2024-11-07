@@ -54,8 +54,19 @@
 
         <!-- LLM Model Dropdown -->
         <label class="block mb-2">
-          LLM Model:
-          <select v-model="uploadForm.llmModelName" class="border p-2 w-full">
+          Text correction LLM Model:
+          <select v-model="uploadForm.correctionModelName" class="border p-2 w-full">
+            <option value="">Selecteer een optie</option>
+            <option v-for="model in data.llmModels" :key="model" :value="model">
+              {{ model }}
+            </option>
+          </select>
+        </label>
+
+         <!-- LLM Model Dropdown -->
+         <label class="block mb-2">
+          Question Answering LLM Model:
+          <select v-model="uploadForm.questionAnsweringModelName" class="border p-2 w-full">
             <option value="">Selecteer een optie</option>
             <option v-for="model in data.llmModels" :key="model" :value="model">
               {{ model }}
@@ -135,6 +146,8 @@ interface UploadForm {
   doVoiceExtraction: boolean;
   doCorrection: boolean;
   doQuestionAnswering: boolean;
+  correctionModelName: string;
+  questionAnsweringModelName: string;
 }
 
 interface ProjectForm {
@@ -160,6 +173,8 @@ export default defineComponent({
       doVoiceExtraction: false,
       doCorrection: true,
       doQuestionAnswering: true,
+      correctionModelName: '',
+      questionAnsweringModelName: '',
     });
 
     // Project creation form state
@@ -215,7 +230,8 @@ export default defineComponent({
         // Adding the query parameters
         const params = {
           whisper_model_name: uploadForm.value.whisperModelName,
-          llm_model_name: uploadForm.value.llmModelName,
+          correction_model_name: uploadForm.value.correctionModelName,
+          question_answering_model_name: uploadForm.value.questionAnsweringModelName,
           project_id: uploadForm.value.selectedProjectId,
           do_voice_extraction: uploadForm.value.doVoiceExtraction,
           do_correction: uploadForm.value.doCorrection,

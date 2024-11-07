@@ -73,11 +73,9 @@ import { defineComponent, ref, onMounted } from 'vue';
 import axios from 'axios';
 import { useRoute } from 'vue-router';
 import { Marked } from '@ts-stack/markdown';
-import { OllamaMarkdownRenderer } from '../helpers/OllamaMarkdownRenderer';
 import { Project, QuestionAnswer } from '../types';
 import { fetchLLMModels } from '../helpers/llmHelpers';
-
-Marked.setOptions({ renderer: new OllamaMarkdownRenderer() });
+import { parseIfPresent } from '../helpers/markdownRender';
 
 export default defineComponent({
     setup() {
@@ -113,8 +111,6 @@ export default defineComponent({
                 alert('Failed to combine insights');
             }
         };
-
-        const parseIfPresent = (text: string | null | undefined) => text ? Marked.parse(text) : null;
 
         const fetchProjectDetail = async () => {
             const response = await axios.get(`/projects/${route.params.id}`);

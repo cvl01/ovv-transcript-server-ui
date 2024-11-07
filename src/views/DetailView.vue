@@ -49,7 +49,7 @@
             </button>
 
             <div v-for="qa in audioFile?.questions_answers" :key="qa.id"
-                class="bg-white shadow-md border rounded-lg p-8 h-auto" :id="'question-box-' + qa.id">
+                class="bg-white shadow-md border rounded-lg p-8 h-auto ovv-question-box" :id="'question-box-' + qa.id">
                 <h3 class="">{{ qa.heading }}</h3>
                 <span class="italic"> #{{ qa.question_id }} {{ qa.question }}</span>
                 <hr class="mb-4 ">
@@ -63,7 +63,7 @@
                     </a>
                 </div>
                 <span v-else>
-                    <div @click="toggleShowMore(qa.id)" class="space-y-4" v-html="qa.answer">
+                    <div class="space-y-4" v-html="qa.answer">
                     </div>
                     <a @click="toggleShowMore(qa.id)" class="text-blue-500 cursor-pointer">
                         Show Less
@@ -79,12 +79,9 @@ import { defineComponent, ref, onMounted } from 'vue';
 import axios from 'axios';
 import { useRoute } from 'vue-router';
 import TranscriptDiff from '../components/TranscriptDiff.vue';
-import { Marked } from '@ts-stack/markdown'
-import { OllamaMarkdownRenderer } from '../helpers/OllamaMarkdownRenderer';
 import { AudioFile } from '../types';
+import { parseIfPresent } from '../helpers/markdownRender';
 
-
-Marked.setOptions({ renderer: new OllamaMarkdownRenderer() })
 
 
 export default defineComponent({
@@ -115,14 +112,13 @@ export default defineComponent({
                 alert('Failed to trigger continue processing');
             }
         };
-        const parseIfPresent = (text: string | null | undefined) => text ? Marked.parse(text) : null;
 
         const fetchAudioFileDetail = async () => {
             const response = await axios.get(`/audio-files/${route.params.id}`);
             audioFile.value = response.data as AudioFile;
             console.log(audioFile)
             audioFile.value.questions_answers?.map(x => {
-                x.answer = Marked.parse(x.answer)
+                x.answer = parseIfPresent(x.answer) ?? ''
                 return x
             })
 
